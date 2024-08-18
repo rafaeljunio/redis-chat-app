@@ -6,6 +6,9 @@ import {
   ThumbsUp,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
+import useSound from 'use-sound'
+
+import { usePreferences } from '@/store/use-preferences'
 
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
@@ -15,6 +18,20 @@ export const ChatBottomBar = () => {
   const [message, setMessage] = useState('')
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const isPending = false
+
+  const [playSound1] = useSound('/sounds/keystroke1.mp3')
+  const [playSound2] = useSound('/sounds/keystroke2.mp3')
+  const [playSound3] = useSound('/sounds/keystroke3.mp3')
+  const [playSound4] = useSound('/sounds/keystroke4.mp3')
+
+  const { soundEnabled } = usePreferences()
+
+  const playSoundFunctions = [playSound1, playSound2, playSound3, playSound4]
+
+  const playRandomKeyStrokeSound = () => {
+    const randomIndex = Math.floor(Math.random() * playSoundFunctions.length)
+    soundEnabled && playSoundFunctions[randomIndex]()
+  }
 
   return (
     <div className="p-2 flex justify-between w-full items-center gap-2">
@@ -43,7 +60,10 @@ export const ChatBottomBar = () => {
             rows={1}
             className="w-full border rounded-full flex items-center h-9 resize-none overflow-hidden bg-background min-h-0"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value)
+              playRandomKeyStrokeSound()
+            }}
             ref={textAreaRef}
           />
           <div className="absolute right-2 bottom-0.5">
