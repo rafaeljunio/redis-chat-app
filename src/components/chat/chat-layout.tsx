@@ -7,18 +7,25 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
+import type { User } from '@/db/dummy'
 import { cn } from '@/lib/utils'
+import { useSelectedUser } from '@/store/use-selected-user'
 
 import { Sidebar } from '../sidebar'
 import { MessageContainer } from './message-container'
 
 type ChatLayoutProps = {
   defaultLayout: number[] | undefined
+  users: User[]
 }
 
-export const ChatLayout = ({ defaultLayout = [320, 480] }: ChatLayoutProps) => {
+export const ChatLayout = ({
+  defaultLayout = [320, 480],
+  users,
+}: ChatLayoutProps) => {
   const [isMobile, setIsMobile] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const { selectedUser } = useSelectedUser()
 
   useEffect(() => {
     const checkScreenWidth = () => {
@@ -57,22 +64,27 @@ export const ChatLayout = ({ defaultLayout = [320, 480] }: ChatLayoutProps) => {
           isCollapsed && 'min-w-[80px] transition-all duration-300 ease-in-out',
         )}
       >
-        <Sidebar isCollapsed={isCollapsed} />
+        <Sidebar isCollapsed={isCollapsed} users={users} />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-        {/* <div className="flex justify-center items-center h-full w-full px-10">
-          <div className="flex flex-col justify-center items-center gap-4">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="w-full md:w-2/3 lg:w-1/2"
-            />
-            <p className="text-muted-foreground text-center">
-              Click on a chat to view the message
-            </p>
+        {!selectedUser && (
+          <div className="flex justify-center items-center h-full w-full px-10">
+            <div className="flex flex-col justify-center items-center gap-4">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-full md:w-2/3 lg:w-1/2"
+              />
+              <p className="text-muted-foreground text-center">
+                Click on a chat to view the message
+              </p>
+            </div>
           </div>
-        </div> */}
+        )}
+
+        {selectedUser && <MessageContainer />}
+
         <MessageContainer />
       </ResizablePanel>
     </ResizablePanelGroup>
