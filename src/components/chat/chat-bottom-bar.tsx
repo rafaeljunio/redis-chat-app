@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Image as ImageIcon,
@@ -8,7 +9,9 @@ import {
 import { useRef, useState } from 'react'
 import useSound from 'use-sound'
 
+import { sendMessageAction } from '@/actions/message.actions'
 import { usePreferences } from '@/store/use-preferences'
+import { useSelectedUser } from '@/store/use-selected-user'
 
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
@@ -17,7 +20,7 @@ import { EmojiPicker } from './emoji-picker'
 export const ChatBottomBar = () => {
   const [message, setMessage] = useState('')
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
-  const isPending = false
+  const { selectedUser } = useSelectedUser()
 
   const [playSound1] = useSound('/sounds/keystroke1.mp3')
   const [playSound2] = useSound('/sounds/keystroke2.mp3')
@@ -31,6 +34,24 @@ export const ChatBottomBar = () => {
   const playRandomKeyStrokeSound = () => {
     const randomIndex = Math.floor(Math.random() * playSoundFunctions.length)
     soundEnabled && playSoundFunctions[randomIndex]()
+  }
+
+  const { mutate: sendMessage, isPending } = useMutation({
+    mutationFn: sendMessageAction,
+  })
+
+  const handleSendMessage = () => {
+    if (!message.trim()) {
+      return
+    }
+
+    sendMessage({
+      content: message,
+      messageType: 'text',
+      receiverId: selectedUser?.id as string,
+    })
+    setMessage('')
+    textAreaRef.current?.focus()
   }
 
   return (
@@ -83,6 +104,7 @@ export const ChatBottomBar = () => {
             className="size-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white shrink-0"
             variant={'ghost'}
             size={'icon'}
+            onClick={handleSendMessage}
           >
             <SendHorizontal size={20} className="text-muted-foreground" />
           </Button>
